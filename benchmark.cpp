@@ -86,28 +86,32 @@ static void BM_MatmulCUDAShared(benchmark::State& state) {
 
 
 BENCHMARK(BM_MatmulNaive)->Name("CPU-Naive")
-            ->RangeMultiplier(2)->Range(8, 8<<8) //8, 16, 32, ..., 2k
+            ->RangeMultiplier(2)->Range(8, 8<<9) //8, 16, 32, ..., 2k
             ->Complexity(benchmark::oN) 
             ->UseManualTime()
-            ->Unit(benchmark::kMillisecond);
+            //->Unit(benchmark::kMillisecond);
+            ->Unit(benchmark::kMicrosecond); // us
 
 BENCHMARK(BM_MatmulOpenMP)->Name("CPU-OpenMP")
-            ->RangeMultiplier(2)->Range(8, 8<<9) //8, 16, 32, ..., 2k, 4k
+            ->RangeMultiplier(2)->Range(8, 8<<10) //8, 16, 32, ..., 2k, 4k
             ->Complexity(benchmark::oN) 
             ->UseManualTime()
-            ->Unit(benchmark::kMillisecond);
+            //->Unit(benchmark::kMillisecond);
+            ->Unit(benchmark::kMicrosecond); // us
 
 BENCHMARK(BM_MatmulCUDANaive)->Name("GPU-Naive")
             ->RangeMultiplier(2)->Range(8, 8<<10) //8, 16, 32, ..., 2k, 4k, 8k
             ->Complexity(benchmark::oN) 
             ->UseManualTime()
-            ->Unit(benchmark::kMillisecond);
+            //->Unit(benchmark::kMillisecond);
+            ->Unit(benchmark::kMicrosecond); // us
 
 BENCHMARK(BM_MatmulCUDAShared)->Name("GPU-Shared")
             ->RangeMultiplier(2)->Range(8, 8<<10) //8, 16, 32, ..., 2k, 4k, 8k
             ->Complexity(benchmark::oN) 
             ->UseManualTime()
-            ->Unit(benchmark::kMillisecond);
+            //->Unit(benchmark::kMillisecond);
+            ->Unit(benchmark::kMicrosecond); // us
 
 
 BENCHMARK_MAIN();

@@ -24,61 +24,62 @@ CPU Caches:
   L1 Instruction 32 KiB (x24)
   L2 Unified 1024 KiB (x24)
   L3 Unified 16896 KiB (x2)
-Load Average: 7.02, 6.38, 3.37
+Load Average: 2.25, 1.06, 0.95
 ***WARNING*** CPU scaling is enabled, the benchmark real time measurements may be noisy and will incur extra overhead.
-***WARNING*** Library was built as DEBUG. Timings may be affected.
 ----------------------------------------------------------------------
 Benchmark                            Time             CPU   Iterations
 ----------------------------------------------------------------------
-CPU-Naive/8/manual_time          0.000 ms        0.000 ms      1889971
-CPU-Naive/16/manual_time         0.003 ms        0.003 ms       250962
-CPU-Naive/32/manual_time         0.024 ms        0.024 ms        28661
-CPU-Naive/64/manual_time         0.227 ms        0.227 ms         3089
-CPU-Naive/128/manual_time         2.10 ms         2.10 ms          334
-CPU-Naive/256/manual_time         18.2 ms         18.2 ms           38
-CPU-Naive/512/manual_time          178 ms          178 ms            4
-CPU-Naive/1024/manual_time        3092 ms         3091 ms            1
-CPU-Naive/2048/manual_time       40942 ms        40934 ms            1
-CPU-Naive/manual_time_BigO  15576951.06 N    15573943.02 N    
-CPU-Naive/manual_time_RMS          123 %           123 %    
-CPU-OpenMP/8/manual_time         0.011 ms        0.011 ms        63266
-CPU-OpenMP/16/manual_time        0.026 ms        0.026 ms        31941
-CPU-OpenMP/32/manual_time        0.013 ms        0.013 ms        52791
-CPU-OpenMP/64/manual_time        0.021 ms        0.021 ms        32861
-CPU-OpenMP/128/manual_time       0.085 ms        0.085 ms         8659
-CPU-OpenMP/256/manual_time       0.636 ms        0.636 ms         1065
-CPU-OpenMP/512/manual_time        7.08 ms         7.01 ms           84
-CPU-OpenMP/1024/manual_time        218 ms          213 ms            3
-CPU-OpenMP/2048/manual_time       2185 ms         2130 ms            1
-CPU-OpenMP/4096/manual_time      41787 ms        39130 ms            1
-CPU-OpenMP/manual_time_BigO 7861624.83 N    7369791.82 N    
-CPU-OpenMP/manual_time_RMS         137 %           137 %    
-GPU-Naive/8/manual_time          0.006 ms        0.006 ms       108625
-GPU-Naive/16/manual_time         0.007 ms        0.007 ms       103374
-GPU-Naive/32/manual_time         0.007 ms        0.007 ms        93742
-GPU-Naive/64/manual_time         0.007 ms        0.007 ms        87780
-GPU-Naive/128/manual_time        0.010 ms        0.010 ms        72506
-GPU-Naive/256/manual_time        0.034 ms        0.034 ms        20779
-GPU-Naive/512/manual_time        0.221 ms        0.221 ms         3175
-GPU-Naive/1024/manual_time        1.67 ms         1.67 ms          422
-GPU-Naive/2048/manual_time        14.4 ms         14.4 ms           49
-GPU-Naive/4096/manual_time         115 ms          115 ms            6
-GPU-Naive/8192/manual_time         950 ms          950 ms            1
-GPU-Naive/manual_time_BigO    92642.14 N      92635.99 N    
-GPU-Naive/manual_time_RMS          118 %           118 %    
-GPU-Shared/8/manual_time         0.006 ms        0.006 ms       120449
-GPU-Shared/16/manual_time        0.006 ms        0.006 ms       112922
-GPU-Shared/32/manual_time        0.007 ms        0.007 ms        96647
-GPU-Shared/64/manual_time        0.009 ms        0.009 ms        77716
-GPU-Shared/128/manual_time       0.012 ms        0.012 ms        56195
-GPU-Shared/256/manual_time       0.022 ms        0.022 ms        31654
-GPU-Shared/512/manual_time       0.132 ms        0.132 ms         5334
-GPU-Shared/1024/manual_time       1.00 ms         1.00 ms          698
-GPU-Shared/2048/manual_time       8.03 ms         8.03 ms           87
-GPU-Shared/4096/manual_time       70.3 ms         70.3 ms           11
-GPU-Shared/8192/manual_time        547 ms          547 ms            1
-GPU-Shared/manual_time_BigO   53486.84 N      53484.40 N    
-GPU-Shared/manual_time_RMS         116 %           116 %   
+CPU-Naive/8/manual_time          0.372 us        0.398 us      1873137
+CPU-Naive/16/manual_time          2.79 us         2.82 us       245379
+CPU-Naive/32/manual_time          24.4 us         24.4 us        28740
+CPU-Naive/64/manual_time           230 us          230 us         3051
+CPU-Naive/128/manual_time         2121 us         2121 us          330
+CPU-Naive/256/manual_time        18533 us        18532 us           38
+CPU-Naive/512/manual_time       170520 us       170511 us            4
+CPU-Naive/1024/manual_time     3152262 us      3152122 us            1
+CPU-Naive/2048/manual_time    41267121 us     41264725 us            1
+CPU-Naive/4096/manual_time   620636631 us    620598655 us            1
+CPU-Naive/manual_time_BigO  117568617.95 N    117561438.47 N    
+CPU-Naive/manual_time_RMS          133 %           133 %    
+CPU-OpenMP/8/manual_time          10.7 us         11.0 us        65095
+CPU-OpenMP/16/manual_time         11.9 us         12.1 us        61912
+CPU-OpenMP/32/manual_time         13.0 us         13.2 us        54654
+CPU-OpenMP/64/manual_time         21.6 us         21.7 us        32434
+CPU-OpenMP/128/manual_time        83.4 us         83.5 us         8481
+CPU-OpenMP/256/manual_time         657 us          657 us         1061
+CPU-OpenMP/512/manual_time        7068 us         7024 us           87
+CPU-OpenMP/1024/manual_time     218275 us       215265 us            3
+CPU-OpenMP/2048/manual_time    2065809 us      1975598 us            1
+CPU-OpenMP/4096/manual_time   34425140 us     30749125 us            1
+CPU-OpenMP/8192/manual_time  420507095 us    404804633 us            1
+CPU-OpenMP/manual_time_BigO 40124264.83 N    38516287.06 N    
+CPU-OpenMP/manual_time_RMS         134 %           136 %    
+GPU-Naive/8/manual_time           6.49 us         6.52 us       107719
+GPU-Naive/16/manual_time          6.77 us         6.79 us       103171
+GPU-Naive/32/manual_time          7.21 us         7.24 us        93359
+GPU-Naive/64/manual_time          7.43 us         7.46 us        86643
+GPU-Naive/128/manual_time         9.66 us         9.69 us        72564
+GPU-Naive/256/manual_time         33.4 us         33.5 us        20922
+GPU-Naive/512/manual_time          219 us          219 us         3196
+GPU-Naive/1024/manual_time        1657 us         1657 us          422
+GPU-Naive/2048/manual_time       14244 us        14243 us           49
+GPU-Naive/4096/manual_time      114165 us       114158 us            6
+GPU-Naive/8192/manual_time      963094 us       963074 us            1
+GPU-Naive/manual_time_BigO    93746.27 N      93744.12 N    
+GPU-Naive/manual_time_RMS          119 %           119 %    
+GPU-Shared/8/manual_time          5.85 us         5.87 us       119866
+GPU-Shared/16/manual_time         6.23 us         6.26 us       112234
+GPU-Shared/32/manual_time         7.27 us         7.30 us        96541
+GPU-Shared/64/manual_time         9.03 us         9.05 us        77446
+GPU-Shared/128/manual_time        12.4 us         12.4 us        56412
+GPU-Shared/256/manual_time        22.1 us         22.1 us        31651
+GPU-Shared/512/manual_time         131 us          131 us         5359
+GPU-Shared/1024/manual_time        990 us          990 us          707
+GPU-Shared/2048/manual_time       7927 us         7927 us           88
+GPU-Shared/4096/manual_time      66945 us        66941 us           11
+GPU-Shared/8192/manual_time     542039 us       542013 us            1
+GPU-Shared/manual_time_BigO   52883.29 N      52880.67 N    
+GPU-Shared/manual_time_RMS         118 %           118 %   
 ```
 
 ![matmul_benchmark](figures/matmul_benchmark.png)
