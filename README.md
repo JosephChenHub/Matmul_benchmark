@@ -80,3 +80,6 @@ GPU-Shared/8192/manual_time        547 ms          547 ms            1
 GPU-Shared/manual_time_BigO   53486.84 N      53484.40 N    
 GPU-Shared/manual_time_RMS         116 %           116 %   
 ```
+
+![matmul_benchmark](figures/matmul_benchmark.png)
+
