@@ -25,6 +25,32 @@ static void BM_MatmulNaive(benchmark::State& state) {
     state.SetComplexityN(state.range(0));
 }
 
+static void BM_MatmulNaiveTrans(benchmark::State& state) {
+    const int n = state.range(0);
+    auto A = Matrix<float>::randn(n, n);
+    auto B = Matrix<float>::randn(n, n);
+    auto Bt = Matrix<float>::randn(n, n);
+    auto C = Matrix<float>::zeros(n, n);
+  
+    for (auto _ : state) {
+        auto start = std::chrono::high_resolution_clock::now();
+        int i, j;
+        for(i = 0; i < B.rows(); ++i) {
+            for(j = 0; j < B.cols(); ++j) {
+                Bt[j][i] = B[i][j];
+            }
+        }
+        matmul_trans(A, Bt, C);
+        auto end = std::chrono::high_resolution_clock::now();
+        auto elapsed_seconds =
+            std::chrono::duration_cast<std::chrono::duration<double>>(
+                    end - start);
+
+        state.SetIterationTime(elapsed_seconds.count());
+    }
+    state.SetComplexityN(state.range(0));
+}
+
 static void BM_MatmulOpenMP(benchmark::State& state) {
     const int n = state.range(0);
     auto A = Matrix<float>::randn(n, n);
@@ -86,18 +112,26 @@ static void BM_MatmulCUDAShared(benchmark::State& state) {
 
 
 BENCHMARK(BM_MatmulNaive)->Name("CPU-Naive")
-            ->RangeMultiplier(2)->Range(8, 8<<9) //8, 16, 32, ..., 2k
+            ->RangeMultiplier(2)->Range(8, 8<<8) //8, 16, 32, ..., 2k
+            ->Complexity(benchmark::oN) 
+            ->UseManualTime()
+            //->Unit(benchmark::kMillisecond);
+            ->Unit(benchmark::kMicrosecond); // us
+
+BENCHMARK(BM_MatmulNaiveTrans)->Name("CPU-NaiveTrans")
+            ->RangeMultiplier(2)->Range(8, 8<<8) //8, 16, 32, ..., 2k
             ->Complexity(benchmark::oN) 
             ->UseManualTime()
             //->Unit(benchmark::kMillisecond);
             ->Unit(benchmark::kMicrosecond); // us
 
 BENCHMARK(BM_MatmulOpenMP)->Name("CPU-OpenMP")
-            ->RangeMultiplier(2)->Range(8, 8<<10) //8, 16, 32, ..., 2k, 4k
+            ->RangeMultiplier(2)->Range(8, 8<<9) //8, 16, 32, ..., 2k, 4k
             ->Complexity(benchmark::oN) 
             ->UseManualTime()
             //->Unit(benchmark::kMillisecond);
             ->Unit(benchmark::kMicrosecond); // us
+
 
 BENCHMARK(BM_MatmulCUDANaive)->Name("GPU-Naive")
             ->RangeMultiplier(2)->Range(8, 8<<10) //8, 16, 32, ..., 2k, 4k, 8k

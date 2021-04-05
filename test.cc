@@ -66,7 +66,7 @@ TEST(Matrix, matmul) {
 
 
 TEST(Matrix, benchmark) {
-    const int N = 1024*2; 
+    const int N = 1024; 
     auto A = Matrix<float>::randn(N, N);
     auto B = Matrix<float>::randn(N, N);
     auto C1 = Matrix<float>(A.rows(), B.cols());
@@ -108,6 +108,16 @@ TEST(Matrix, benchmark) {
     cout << "matmul cuda_shared cost:" << duration << " ms" << endl;
     
     ASSERT_LE((C1 - C4.cpu()).max(), 1e-5);
+
+    auto C5 = Matrix<float>::zeros(N, N);
+    start = high_resolution_clock::now();
+    B = B.cpu().transpose();
+    matmul_trans(A.cpu(), B, C5);
+    end   = high_resolution_clock::now();
+    duration = std::chrono::duration<float, std::milli>(end - start).count();
+    cout << "matmul trans cost:" << duration << " ms" << endl;
+    
+    ASSERT_LE((C1 - C5).max(), 1e-5);
 
 }
 

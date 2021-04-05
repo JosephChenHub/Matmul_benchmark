@@ -1,4 +1,5 @@
 #include <iostream>
+#include <xmmintrin.h> // SSE
 
 #include "matmul.hpp"
 
@@ -33,6 +34,23 @@ void matmul_openmp(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>
         }
     }
 }
+
+
+template <typename Dtype>
+void matmul_trans(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C) {
+    assert (A.rows() == C.rows() && A.cols() == B.rows() && B.cols() == C.cols());
+    int i, j;
+    for(i = 0; i < C.rows(); ++i) {
+        for(j = 0; j < C.cols(); ++j) {
+            Dtype tmp(0);
+            for(int k = 0; k < A.cols(); ++k) {
+                tmp += A[i][k] * B[j][k];
+            }
+            C[i][j] = tmp;
+        }
+    }
+}
+
 
 
 
@@ -74,3 +92,7 @@ template void matmul_cuda_naive(const Matrix<int>&, const Matrix<int>&, Matrix<i
 template void matmul_cuda_shared(const Matrix<float>&, const Matrix<float>&, Matrix<float>& );
 template void matmul_cuda_shared(const Matrix<double>&, const Matrix<double>&, Matrix<double>& );
 template void matmul_cuda_shared(const Matrix<int>&, const Matrix<int>&, Matrix<int>& );
+
+template void matmul_trans(const Matrix<float>&, const Matrix<float>&, Matrix<float>& );
+template void matmul_trans(const Matrix<double>&, const Matrix<double>&, Matrix<double>& );
+template void matmul_trans(const Matrix<int>&, const Matrix<int>&, Matrix<int>& );

@@ -91,6 +91,7 @@ public:
     size_t numel() const {return _rows * _cols;}
     Dtype* data() {return _data;}
     const Dtype* data() const {return _data;}
+
     Dtype* operator[] (const int i) {
         return _data + i * _cols ;
     }
@@ -163,6 +164,16 @@ public:
         }
     }
 
+    Matrix<Dtype> transpose() {
+        Matrix<Dtype> dst(_cols, _rows);
+        for(int i = 0; i < _rows; ++i) {
+            for(int j = 0; j < _cols; ++j) {
+                dst[j][i] = _data[i * _rows + j];
+            }
+        }
+        return dst;
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const Matrix<Dtype> & m) {
         os << "[";
         for(int i = 0; i < m._rows; ++i) {
@@ -192,3 +203,7 @@ void matmul_cuda_naive(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dt
 
 template <typename Dtype>
 void matmul_cuda_shared(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C);
+
+template <typename Dtype>
+void matmul_trans(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C);
+
