@@ -20,7 +20,7 @@ for(int i = 0; i < A.rows; ++i) {
     }
 }
 ```
--Naive-Trans:
+- Naive-Trans:
 in `Naive`, the access of `B[:][i]` is not cache-friendly, and we can transpose `B` (cost `O(N^2)`) before doing matmul, 
 ```
 // Bt = B.transpose()
@@ -40,9 +40,10 @@ for(int i = 0; i < A.rows; ++i) {
 }
 ```
 - Using OpenMP : a simple method via multi-cores
-- Using SIMD (CUDA) : 
 
-- Using SIMD (CPU):
+- Using SIMD (CUDA) : naive method, shared memory based method
+
+- Using SIMD (CPU): SSE, AVX, etc.
 
 - Strassen : 
 
