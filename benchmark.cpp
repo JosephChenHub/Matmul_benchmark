@@ -179,7 +179,7 @@ BENCHMARK(BM_cuda_naive)->Name("cuda-naive")
 		->UseManualTime()
 		->Unit(benchmark::kMicrosecond);
 
-static void BM_cuda_shared(benchmark::State& state) {
+static void BM_cuda_tile(benchmark::State& state) {
 	const int n = static_cast<int>(state.range(0));
 	auto A = Matrix<float>::randn(n, n);
 	auto B = Matrix<float>::randn(n, n);
@@ -188,7 +188,7 @@ static void BM_cuda_shared(benchmark::State& state) {
 
 	for(auto _ : state) {
 		auto start = std::chrono::high_resolution_clock::now();
-		matmul_cuda_shared(A, B, C);
+		matmul_cuda_tile(A, B, C);
 		cudaDeviceSynchronize();
 		auto end = std::chrono::high_resolution_clock::now();
 		auto elapsed_seconds = 
@@ -197,7 +197,55 @@ static void BM_cuda_shared(benchmark::State& state) {
 	}
 	state.SetComplexityN(state.range(0));
 }
-BENCHMARK(BM_cuda_shared)->Name("cuda-shared")
+BENCHMARK(BM_cuda_tile)->Name("cuda-tile")
+		->RangeMultiplier(2)->Range(8, 8192)
+		->Complexity(benchmark::oN)
+		->UseManualTime()
+		->Unit(benchmark::kMicrosecond);
+
+static void BM_cuda_unroll(benchmark::State& state) {
+	const int n = static_cast<int>(state.range(0));
+	auto A = Matrix<float>::randn(n, n);
+	auto B = Matrix<float>::randn(n, n);
+	auto C = Matrix<float>::zeros(n, n);
+	 A = A.cuda(); B = B.cuda(); C = C.cuda();
+
+	for(auto _ : state) {
+		auto start = std::chrono::high_resolution_clock::now();
+		matmul_cuda_unroll(A, B, C);
+		cudaDeviceSynchronize();
+		auto end = std::chrono::high_resolution_clock::now();
+		auto elapsed_seconds = 
+			std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
+		state.SetIterationTime(elapsed_seconds.count());
+	}
+	state.SetComplexityN(state.range(0));
+}
+BENCHMARK(BM_cuda_unroll)->Name("cuda-unroll")
+		->RangeMultiplier(2)->Range(8, 8192)
+		->Complexity(benchmark::oN)
+		->UseManualTime()
+		->Unit(benchmark::kMicrosecond);
+
+static void BM_cublas_sgemm(benchmark::State& state) {
+	const int n = static_cast<int>(state.range(0));
+	auto A = Matrix<float>::randn(n, n);
+	auto B = Matrix<float>::randn(n, n);
+	auto C = Matrix<float>::zeros(n, n);
+	 A = A.cuda(); B = B.cuda(); C = C.cuda();
+
+	for(auto _ : state) {
+		auto start = std::chrono::high_resolution_clock::now();
+		matmul_cublas(A, B, C);
+		cudaDeviceSynchronize();
+		auto end = std::chrono::high_resolution_clock::now();
+		auto elapsed_seconds = 
+			std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
+		state.SetIterationTime(elapsed_seconds.count());
+	}
+	state.SetComplexityN(state.range(0));
+}
+BENCHMARK(BM_cublas_sgemm)->Name("cublas-sgemm")
 		->RangeMultiplier(2)->Range(8, 8192)
 		->Complexity(benchmark::oN)
 		->UseManualTime()

@@ -97,6 +97,12 @@ TEST(Matrix, copyFrom) {
     cout << " A: " << a << "\t B:" << b << endl;
 }
 
+TEST(Matrix, transpose) {
+    auto a = Matrix<float>::randn(3, 5);
+    auto b = a.transpose();
+    cout << "A:" << a << " A.T:" << b << endl;
+}
+
 TEST(Matrix, matmul) {
     const int n = 4;
     auto A = Matrix<float>::randn(n, n);
@@ -119,6 +125,10 @@ TEST(Matrix, matmul) {
     cout << "strassen:" << C4 << endl;
 
     ASSERT_LE((C1-C4).abs().max(), 1e-5);
+
+    auto C5 = Matrix<float>::zeros(n, n).cuda();
+    matmul_cublas(A.cuda(), B.cuda(), C5);
+    cout << "cublas:" << C5.cpu() << endl;
 }
 
 
@@ -146,26 +156,42 @@ protected:
        _B = Matrix<float>::randn(_n, _n); 
        _C = Matrix<float>::zeros(_n, _n);
        _AB = Matrix<float>::zeros(_n, _n);
-       matmul_naive(_A, _B, _AB);
-       if (_name == "cuda-naive" || _name == "cuda-shared") {
+       if (_n >= 2048) {
+	   _AB = _AB.cuda();
+           //matmul_cuda_tile(_A.cuda(), _B.cuda(), _AB);
+	   matmul_cublas<float>(_A.cuda(), _B.cuda(), _AB.cuda());
+	   _AB = _AB.cpu();
+       } else {	   
+           matmul_naive(_A, _B, _AB);
+       }
+       if (_name == "cuda-naive" || _name == "cuda-tile" ||
+           _name == "cuda-unroll" || _name == "cublas-sgemm"||
+	   _name == "cuda-vectorize") {
           _A = _A.cuda(); _B = _B.cuda(); _C = _C.cuda();
        }
-       _start = high_resolution_clock::now(); 
     }
     void TearDown( ) {
+       _start = high_resolution_clock::now(); 
        switch(U(_name.c_str())) {
 	  //case U("cpu-naive"): matmul_naive(_A, _B, _C); break;
 	  case U("cpu-trans"): matmul_trans(_A, _B.transpose(), _C); break;
+          case U("cpu-trans-block"): matmul_trans_block(_A, _B.transpose(), _C); break;			 
 	  case U("cpu-omp"):   matmul_openmp(_A, _B, _C); break;
           case U("cpu-omp-sse"): matmul_omp_sse(_A, _B.transpose(), _C); break;
           case U("cpu-omp-avx"): matmul_omp_avx(_A, _B.transpose(), _C); break;			      
+          case U("cpu-omp-avx512") : matmul_omp_avx512(_A, _B.transpose(), _C); break;				 
           case U("cpu-strassen"): matmul_strassen(_A, _B, _C); break;
 	  case U("cuda-naive"): { matmul_cuda_naive(_A, _B, _C); cudaDeviceSynchronize(); } break;
-	  case U("cuda-shared"): { matmul_cuda_shared(_A, _B, _C); cudaDeviceSynchronize(); } break;
+	  case U("cuda-tile"): { matmul_cuda_tile(_A, _B, _C); cudaDeviceSynchronize(); } break;
+	  case U("cuda-unroll"): { matmul_cuda_unroll(_A, _B, _C); cudaDeviceSynchronize(); } break;
+          case U("cublas-sgemm"): {matmul_cublas<float>(_A, _B, _C); cudaDeviceSynchronize();} break;				 
+          case U("cuda-vectorize"): {matmul_cuda_vectorize(_A, _B, _C); cudaDeviceSynchronize(); } break;				 
           default: break;			      
        }
        _end = high_resolution_clock::now();
-       if (_name == "cuda-naive" || _name == "cuda-shared") _C = _C.cpu();
+       if (_name == "cuda-naive" || _name == "cuda-tile" 
+           || _name == "cuda-unroll" || _name == "cublas-sgemm"||
+	   _name == "cuda-vectorize") _C = _C.cpu();
        ASSERT_LE((_C - _AB).abs().max(), 5e-4);
        auto duration = std::chrono::duration<float, std::milli>(_end - _start).count();
        cout << "matmul --" << _name 
@@ -179,18 +205,33 @@ TEST_P(MatmulTest, benchmark) {
 
 }
 
-//     ranges.begin(), ranges.end(), [] {static int i = -1; return pow(2, i++);
+INSTANTIATE_TEST_CASE_P(
+        SmallTest,
+        MatmulTest,
+        testing::Combine(testing::Values(
+			//"cpu-trans", "cpu-trans-block", 
+			//"cpu-omp", "cpu-omp-sse", "cpu-omp-avx", 
+			//"cpu-strassen",
+			"cuda-naive", "cuda-tile", 
+			"cuda-unroll",
+		       	"cublas-sgemm" 
+			//"cuda-vectorize"
+			),
+			testing::Values(8, 10, 16, 20, 32, 64, 100, 128, 256, 500, 512, 1024)
+			)
+	);
+
 
 
 INSTANTIATE_TEST_CASE_P(
-        CombineTest,
+        AVX512Test,
         MatmulTest,
-        testing::Combine(testing::Values("cpu-trans", "cpu-omp", 
-			"cpu-omp-sse", "cpu-omp-avx", //"cpu-strassen",
-			"cuda-naive", "cuda-shared"),
-			testing::Values(8, 16, 32, 64, 128, 256, 512, 1024)
+        testing::Combine(testing::Values( 
+			"cpu-omp-avx512"), 
+			testing::Values(32, 64, 128, 256, 512, 1024, 2048)
 			)
 	);
+
 
 
 

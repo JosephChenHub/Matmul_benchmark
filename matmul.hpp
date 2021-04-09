@@ -291,7 +291,7 @@ public:
 };
 
 
-
+// CPU based
 template <typename Dtype>
 void matmul_naive(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C);
 
@@ -299,17 +299,10 @@ template <typename Dtype>
 void matmul_openmp(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C);
 
 template <typename Dtype>
-void matmul_cuda_naive(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C);
-
-template <typename Dtype>
-void matmul_cuda_shared(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C);
-
-template <typename Dtype>
 void matmul_trans(const Matrix<Dtype>& A, const Matrix<Dtype>& Bt, Matrix<Dtype>& C);
 
 template <typename Dtype>
 void matmul_trans_block(const Matrix<Dtype>& A, const Matrix<Dtype>& Bt, Matrix<Dtype>& C);
-
 
 template <typename Dtype>
 void matmul_omp_sse(const Matrix<Dtype>& A, const Matrix<Dtype>& Bt, Matrix<Dtype>& C);
@@ -321,3 +314,20 @@ void matmul_omp_avx512(const Matrix<Dtype>& A, const Matrix<Dtype>& Bt, Matrix<D
 
 template <typename Dtype>
 void matmul_strassen(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C);
+
+// GPU based 
+template <typename Dtype>
+void matmul_cuda_naive(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C);
+
+template <typename Dtype>
+void matmul_cuda_tile(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C);
+
+template <typename Dtype>
+void matmul_cuda_unroll(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C);
+
+template <typename Dtype>
+void matmul_cublas(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C);
+
+template <typename Dtype>
+void matmul_cuda_vectorize(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C);
+

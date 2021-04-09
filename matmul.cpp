@@ -105,15 +105,38 @@ void matmul_cuda_naive(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dt
 }
 
 template <typename Dtype>
-void matmul_cuda_shared(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C) {
-    matmul_shared_kernel<Dtype>(
+void matmul_cuda_tile(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C) {
+    matmul_tile_kernel<Dtype>(
+            reinterpret_cast<Dtype*>(A.gpu_data()), 
+            reinterpret_cast<Dtype*>(B.gpu_data()), 
+            reinterpret_cast<Dtype*>(C.gpu_data()), 
+            A.rows(), A.cols(), B.cols());
+}
+template <typename Dtype>
+void matmul_cuda_unroll(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C) {
+    matmul_unroll_kernel<Dtype>(
             reinterpret_cast<Dtype*>(A.gpu_data()), 
             reinterpret_cast<Dtype*>(B.gpu_data()), 
             reinterpret_cast<Dtype*>(C.gpu_data()), 
             A.rows(), A.cols(), B.cols());
 }
 
+template <>
+void matmul_cublas(const Matrix<float>& A, const Matrix<float>& B, Matrix<float>& C) {
+    cublas_sgemm(reinterpret_cast<float*>(A.gpu_data()),
+            reinterpret_cast<float*>(B.gpu_data()), 
+            reinterpret_cast<float*>(C.gpu_data()), 
+            A.rows(), A.cols(), B.cols());
+}
 
+template <typename Dtype>
+void matmul_cuda_vectorize(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C) {
+//    matmul_vectorize_kernel<Dtype>(
+//            reinterpret_cast<Dtype*>(A.gpu_data()), 
+//            reinterpret_cast<Dtype*>(B.gpu_data()), 
+//            reinterpret_cast<Dtype*>(C.gpu_data()), 
+//            A.rows(), A.cols(), B.cols());
+}
 
 template <>
 void matmul_omp_sse(const Matrix<float>& A, const Matrix<float>& Bt, Matrix<float>& C) {
@@ -277,14 +300,6 @@ template void matmul_openmp(const Matrix<float>&, const Matrix<float>&, Matrix<f
 template void matmul_openmp(const Matrix<double>&, const Matrix<double>&, Matrix<double>& );
 template void matmul_openmp(const Matrix<int>&, const Matrix<int>&, Matrix<int>& );
 
-template void matmul_cuda_naive(const Matrix<float>&, const Matrix<float>&, Matrix<float>& );
-template void matmul_cuda_naive(const Matrix<double>&, const Matrix<double>&, Matrix<double>& );
-template void matmul_cuda_naive(const Matrix<int>&, const Matrix<int>&, Matrix<int>& );
-
-template void matmul_cuda_shared(const Matrix<float>&, const Matrix<float>&, Matrix<float>& );
-template void matmul_cuda_shared(const Matrix<double>&, const Matrix<double>&, Matrix<double>& );
-template void matmul_cuda_shared(const Matrix<int>&, const Matrix<int>&, Matrix<int>& );
-
 template void matmul_trans(const Matrix<float>&, const Matrix<float>&, Matrix<float>& );
 template void matmul_trans(const Matrix<double>&, const Matrix<double>&, Matrix<double>& );
 template void matmul_trans(const Matrix<int>&, const Matrix<int>&, Matrix<int>& );
@@ -296,5 +311,22 @@ template void matmul_trans_block(const Matrix<int>&, const Matrix<int>&, Matrix<
 template void matmul_strassen(const Matrix<float>&, const Matrix<float>&, Matrix<float>& );
 template void matmul_strassen(const Matrix<double>&, const Matrix<double>&, Matrix<double>& );
 template void matmul_strassen(const Matrix<int>&, const Matrix<int>&, Matrix<int>& );
+
+template void matmul_cuda_naive(const Matrix<float>&, const Matrix<float>&, Matrix<float>& );
+template void matmul_cuda_naive(const Matrix<double>&, const Matrix<double>&, Matrix<double>& );
+template void matmul_cuda_naive(const Matrix<int>&, const Matrix<int>&, Matrix<int>& );
+
+template void matmul_cuda_tile(const Matrix<float>&, const Matrix<float>&, Matrix<float>& );
+template void matmul_cuda_tile(const Matrix<double>&, const Matrix<double>&, Matrix<double>& );
+template void matmul_cuda_tile(const Matrix<int>&, const Matrix<int>&, Matrix<int>& );
+
+template void matmul_cuda_unroll(const Matrix<float>&, const Matrix<float>&, Matrix<float>& );
+template void matmul_cuda_unroll(const Matrix<double>&, const Matrix<double>&, Matrix<double>& );
+template void matmul_cuda_unroll(const Matrix<int>&, const Matrix<int>&, Matrix<int>& );
+
+template void matmul_cuda_vectorize(const Matrix<float>&, const Matrix<float>&, Matrix<float>& );
+//template void matmul_cuda_vectorize(const Matrix<double>&, const Matrix<double>&, Matrix<double>& );
+//template void matmul_cuda_vectorize(const Matrix<int>&, const Matrix<int>&, Matrix<int>& );
+
 
 

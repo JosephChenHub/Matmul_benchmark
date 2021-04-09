@@ -82,96 +82,141 @@ CPU Caches:
   L1 Instruction 32 KiB (x24)
   L2 Unified 1024 KiB (x24)
   L3 Unified 16896 KiB (x2)
-Load Average: 15.18, 15.77, 8.19
---------------------------------------------------------------------------
-Benchmark                                Time             CPU   Iterations
---------------------------------------------------------------------------
-CPU-Naive/8/manual_time              0.409 us        0.435 us      1709947
-CPU-Naive/16/manual_time              2.97 us         3.00 us       235301
-CPU-Naive/32/manual_time              28.5 us         28.5 us        24584
-CPU-Naive/64/manual_time               230 us          230 us         3045
-CPU-Naive/128/manual_time             2109 us         2109 us          331
-CPU-Naive/256/manual_time            18478 us        18475 us           38
-CPU-Naive/512/manual_time           179765 us       179738 us            4
-CPU-Naive/1024/manual_time         3094298 us      3093892 us            1
-CPU-Naive/2048/manual_time        40399168 us     40393110 us            1
-CPU-Naive/manual_time_BigO      15378613.70 N    15376318.01 N    
-CPU-Naive/manual_time_RMS              123 %           123 %    
-CPU-NaiveTrans/8/manual_time         0.441 us        0.468 us      1589424
-CPU-NaiveTrans/16/manual_time         2.98 us         3.01 us       234761
-CPU-NaiveTrans/32/manual_time         26.2 us         26.2 us        27156
-CPU-NaiveTrans/64/manual_time          231 us          231 us         2979
-CPU-NaiveTrans/128/manual_time        2112 us         2111 us          332
-CPU-NaiveTrans/256/manual_time       18071 us        18070 us           39
-CPU-NaiveTrans/512/manual_time      150437 us       150427 us            5
-CPU-NaiveTrans/1024/manual_time    1217076 us      1216933 us            1
-CPU-NaiveTrans/2048/manual_time    9908246 us      9906791 us            1
-CPU-NaiveTrans/manual_time_BigO 3866027.38 N    3865467.44 N    
-CPU-NaiveTrans/manual_time_RMS         107 %           107 %    
-CPU-OpenMP/8/manual_time              12.2 us         12.3 us        57873
-CPU-OpenMP/16/manual_time             20.3 us         20.3 us        38720
-CPU-OpenMP/32/manual_time             58.7 us         58.9 us        10650
-CPU-OpenMP/64/manual_time             34.4 us         34.5 us        19373
-CPU-OpenMP/128/manual_time             113 us          113 us         5906
-CPU-OpenMP/256/manual_time             705 us          705 us         1034
-CPU-OpenMP/512/manual_time            6724 us         6724 us          103
-CPU-OpenMP/1024/manual_time         214191 us       209030 us            3
-CPU-OpenMP/2048/manual_time        2162594 us      2152563 us            1
-CPU-OpenMP/4096/manual_time       35601416 us     33953207 us            1
-CPU-OpenMP/manual_time_BigO     6726779.47 N    6423828.56 N    
-CPU-OpenMP/manual_time_RMS             134 %           133 %    
-CPU-OMP-SSE/8/manual_time             23.8 us         23.9 us        29143
-CPU-OMP-SSE/16/manual_time            29.2 us         29.3 us        23323
-CPU-OMP-SSE/32/manual_time            47.0 us         47.2 us        14987
-CPU-OMP-SSE/64/manual_time             107 us          107 us         6459
-CPU-OMP-SSE/128/manual_time            380 us          380 us         1779
-CPU-OMP-SSE/256/manual_time            300 us          300 us         2330
-CPU-OMP-SSE/512/manual_time           1369 us         1369 us          515
-CPU-OMP-SSE/1024/manual_time          8813 us         8813 us           75
-CPU-OMP-SSE/2048/manual_time         83183 us        83160 us            8
-CPU-OMP-SSE/4096/manual_time        852229 us       852078 us            1
-CPU-OMP-SSE/8192/manual_time       7523373 us      7518819 us            1
-CPU-OMP-SSE/manual_time_BigO     729811.55 N     729387.19 N    
-CPU-OMP-SSE/manual_time_RMS            122 %           122 %    
-CPU-OMP-AVX/8/manual_time             23.7 us         23.8 us        29644
-CPU-OMP-AVX/16/manual_time            28.7 us         28.8 us        24670
-CPU-OMP-AVX/32/manual_time            47.8 us         48.0 us        14901
-CPU-OMP-AVX/64/manual_time             130 us          131 us         5260
-CPU-OMP-AVX/128/manual_time            433 us          433 us         1573
-CPU-OMP-AVX/256/manual_time            243 us          243 us         2884
-CPU-OMP-AVX/512/manual_time           1021 us         1021 us          690
-CPU-OMP-AVX/1024/manual_time          6402 us         6402 us          110
-CPU-OMP-AVX/2048/manual_time         66029 us        66029 us           10
-CPU-OMP-AVX/4096/manual_time        860487 us       763444 us            1
-CPU-OMP-AVX/8192/manual_time       6978794 us      6922671 us            1
-CPU-OMP-AVX/manual_time_BigO     679909.58 N     670329.11 N    
-CPU-OMP-AVX/manual_time_RMS            119 %           123 %    
-GPU-Naive/8/manual_time               6.82 us         6.84 us       102368
-GPU-Naive/16/manual_time              7.14 us         7.17 us        97921
-GPU-Naive/32/manual_time              7.74 us         7.77 us        89738
-GPU-Naive/64/manual_time              7.94 us         7.97 us        79574
-GPU-Naive/128/manual_time             10.1 us         10.2 us        69024
-GPU-Naive/256/manual_time             33.9 us         33.9 us        20685
-GPU-Naive/512/manual_time              219 us          219 us         3191
-GPU-Naive/1024/manual_time            1652 us         1651 us          424
-GPU-Naive/2048/manual_time           14217 us        14215 us           49
-GPU-Naive/4096/manual_time          114310 us       114281 us            6
-GPU-Naive/8192/manual_time          973652 us       973499 us            1
-GPU-Naive/manual_time_BigO        94718.86 N      94703.48 N    
-GPU-Naive/manual_time_RMS              120 %           120 %    
-GPU-Shared/8/manual_time              6.19 us         6.22 us       112940
-GPU-Shared/16/manual_time             6.61 us         6.63 us       105819
-GPU-Shared/32/manual_time             7.63 us         7.65 us        91814
-GPU-Shared/64/manual_time             9.35 us         9.38 us        74934
-GPU-Shared/128/manual_time            12.8 us         12.8 us        54720
-GPU-Shared/256/manual_time            22.4 us         22.4 us        31290
-GPU-Shared/512/manual_time             131 us          131 us         5362
-GPU-Shared/1024/manual_time            996 us          996 us          703
-GPU-Shared/2048/manual_time           7971 us         7971 us           88
-GPU-Shared/4096/manual_time          65896 us        65886 us           11
-GPU-Shared/8192/manual_time         569202 us       569092 us            1
-GPU-Shared/manual_time_BigO       55323.22 N      55312.67 N    
-GPU-Shared/manual_time_RMS             120 %           120 % 
+Load Average: 0.75, 4.20, 2.50
+---------------------------------------------------------------------------
+Benchmark                                 Time             CPU   Iterations
+---------------------------------------------------------------------------
+cpu-naive/8/manual_time               0.388 us        0.418 us      1816080
+cpu-naive/16/manual_time               2.79 us         2.82 us       246384
+cpu-naive/32/manual_time               25.7 us         25.7 us        26714
+cpu-naive/64/manual_time                230 us          230 us         2918
+cpu-naive/128/manual_time              2286 us         2286 us          303
+cpu-naive/256/manual_time             20434 us        20433 us           35
+cpu-naive/512/manual_time            184615 us       184608 us            4
+cpu-naive/1024/manual_time          3246285 us      3246097 us            1
+cpu-naive/2048/manual_time         43417450 us     43414172 us            1
+cpu-naive/manual_time_BigO       16512312.92 N    16511077.40 N    
+cpu-naive/manual_time_RMS               123 %           123 %    
+cpu-trans/8/manual_time                14.2 us         14.3 us        48495
+cpu-trans/16/manual_time               19.0 us         19.1 us        29552
+cpu-trans/32/manual_time               56.8 us         57.0 us        12305
+cpu-trans/64/manual_time                381 us          381 us         1804
+cpu-trans/128/manual_time              3230 us         3208 us          215
+cpu-trans/256/manual_time             22208 us        22055 us           33
+cpu-trans/512/manual_time            168722 us       168712 us            4
+cpu-trans/1024/manual_time          1368736 us      1368644 us            1
+cpu-trans/2048/manual_time         11090561 us     11089758 us            1
+cpu-trans/manual_time_BigO       4328666.32 N    4328347.12 N    
+cpu-trans/manual_time_RMS               106 %           106 %    
+cpu-trans-block/8/manual_time          15.7 us         15.8 us        44733
+cpu-trans-block/16/manual_time         20.3 us         20.4 us        28145
+cpu-trans-block/32/manual_time         53.1 us         53.2 us        13175
+cpu-trans-block/64/manual_time          320 us          320 us         1845
+cpu-trans-block/128/manual_time        3059 us         3023 us          283
+cpu-trans-block/256/manual_time       15324 us        15324 us           46
+cpu-trans-block/512/manual_time      108463 us       108461 us            6
+cpu-trans-block/1024/manual_time     855927 us       855911 us            1
+cpu-trans-block/2048/manual_time    6917796 us      6917427 us            1
+cpu-trans-block/manual_time_BigO 2700813.26 N    2700674.24 N    
+cpu-trans-block/manual_time_RMS         106 %           106 %    
+cpu-openmp/8/manual_time               14.5 us         15.0 us        48115
+cpu-openmp/16/manual_time              42.8 us         43.3 us        16331
+cpu-openmp/32/manual_time               122 us          122 us         5732
+cpu-openmp/64/manual_time              46.4 us         46.9 us        13779
+cpu-openmp/128/manual_time              131 us          132 us         5341
+cpu-openmp/256/manual_time              784 us          785 us          888
+cpu-openmp/512/manual_time             6514 us         6514 us          106
+cpu-openmp/1024/manual_time          240668 us       240661 us            3
+cpu-openmp/2048/manual_time         1980150 us      1919741 us            1
+cpu-openmp/manual_time_BigO       769859.85 N     747735.79 N    
+cpu-openmp/manual_time_RMS              110 %           109 %    
+cpu-omp-sse/8/manual_time              29.6 us         29.7 us        23561
+cpu-omp-sse/16/manual_time             32.8 us         33.0 us        17798
+cpu-omp-sse/32/manual_time             45.8 us         46.0 us        15213
+cpu-omp-sse/64/manual_time             85.4 us         85.7 us         8423
+cpu-omp-sse/128/manual_time             151 us          151 us         4608
+cpu-omp-sse/256/manual_time             219 us          219 us         3199
+cpu-omp-sse/512/manual_time            1268 us         1268 us          552
+cpu-omp-sse/1024/manual_time           9430 us         9429 us           74
+cpu-omp-sse/2048/manual_time         109966 us        88884 us            6
+cpu-omp-sse/4096/manual_time         779271 us       779244 us            1
+cpu-omp-sse/manual_time_BigO      153221.06 N     151285.94 N    
+cpu-omp-sse/manual_time_RMS             108 %           116 %    
+cpu-omp-avx/8/manual_time              30.9 us         31.0 us        20176
+cpu-omp-avx/16/manual_time             34.2 us         34.4 us        18321
+cpu-omp-avx/32/manual_time             46.7 us         46.8 us        13417
+cpu-omp-avx/64/manual_time             88.2 us         88.5 us         7982
+cpu-omp-avx/128/manual_time             176 us          176 us         3909
+cpu-omp-avx/256/manual_time             172 us          172 us         4105
+cpu-omp-avx/512/manual_time             761 us          761 us          925
+cpu-omp-avx/1024/manual_time           7904 us         7583 us          121
+cpu-omp-avx/2048/manual_time          72523 us        72517 us           11
+cpu-omp-avx/4096/manual_time         757608 us       757583 us            1
+cpu-omp-avx/manual_time_BigO      145744.49 N     145724.66 N    
+cpu-omp-avx/manual_time_RMS             122 %           122 %    
+cpu-omp-avx512/8/manual_time           30.0 us         30.1 us        20418
+cpu-omp-avx512/16/manual_time          34.3 us         34.5 us        18607
+cpu-omp-avx512/32/manual_time          52.7 us         53.0 us        13019
+cpu-omp-avx512/64/manual_time           107 us          107 us         6643
+cpu-omp-avx512/128/manual_time          207 us          207 us         2892
+cpu-omp-avx512/256/manual_time          183 us          183 us         3861
+cpu-omp-avx512/512/manual_time          994 us          989 us          792
+cpu-omp-avx512/1024/manual_time        6948 us         6947 us          100
+cpu-omp-avx512/2048/manual_time       63709 us        63704 us           11
+cpu-omp-avx512/4096/manual_time      779112 us       779040 us            1
+cpu-omp-avx512/manual_time_RMS          126 %           126 %    
+cuda-naive/8/manual_time               6.55 us         6.57 us       106011
+cuda-naive/16/manual_time              7.02 us         7.04 us        97804
+cuda-naive/32/manual_time              7.98 us         8.01 us        75329
+cuda-naive/64/manual_time              10.1 us         10.1 us        68300
+cuda-naive/128/manual_time             14.5 us         14.6 us        48024
+cuda-naive/256/manual_time             25.0 us         25.0 us        27947
+cuda-naive/512/manual_time              161 us          161 us         4362
+cuda-naive/1024/manual_time            1250 us         1250 us          562
+cuda-naive/2048/manual_time           10571 us        10571 us           67
+cuda-naive/4096/manual_time           84485 us        84483 us            8
+cuda-naive/8192/manual_time          702178 us       702151 us            1
+cuda-naive/manual_time_BigO        68411.08 N      68408.48 N    
+cuda-naive/manual_time_RMS              119 %           119 %    
+cuda-tile/8/manual_time                7.18 us         7.20 us        95355
+cuda-tile/16/manual_time               7.25 us         7.27 us        94390
+cuda-tile/32/manual_time               7.37 us         7.40 us        96173
+cuda-tile/64/manual_time               9.06 us         9.08 us        76692
+cuda-tile/128/manual_time              12.6 us         12.6 us        55037
+cuda-tile/256/manual_time              22.4 us         22.4 us        31162
+cuda-tile/512/manual_time               133 us          133 us         5251
+cuda-tile/1024/manual_time             1016 us         1016 us          690
+cuda-tile/2048/manual_time             8188 us         8187 us           85
+cuda-tile/4096/manual_time            65086 us        65083 us           11
+cuda-tile/8192/manual_time           573187 us       573120 us            1
+cuda-tile/manual_time_BigO         55656.10 N      55649.83 N    
+cuda-tile/manual_time_RMS               121 %           121 %    
+cuda-unroll/8/manual_time              8.85 us         8.88 us        77857
+cuda-unroll/16/manual_time             8.87 us         8.90 us        77694
+cuda-unroll/32/manual_time             8.88 us         8.91 us        78817
+cuda-unroll/64/manual_time             12.4 us         12.4 us        56070
+cuda-unroll/128/manual_time            19.2 us         19.3 us        36495
+cuda-unroll/256/manual_time            32.6 us         32.7 us        21448
+cuda-unroll/512/manual_time            69.6 us         69.6 us        10043
+cuda-unroll/1024/manual_time            517 us          517 us         1360
+cuda-unroll/2048/manual_time           4102 us         4102 us          170
+cuda-unroll/4096/manual_time          32010 us        32007 us           19
+cuda-unroll/8192/manual_time         275340 us       275314 us            2
+cuda-unroll/manual_time_BigO       26773.73 N      26771.26 N    
+cuda-unroll/manual_time_RMS             120 %           120 %    
+cublas-sgemm/8/manual_time             7.29 us         7.31 us        95903
+cublas-sgemm/16/manual_time            7.19 us         7.22 us        95263
+cublas-sgemm/32/manual_time            8.57 us         8.60 us        76672
+cublas-sgemm/64/manual_time            9.02 us         9.04 us        7713
+cublas-sgemm/128/manual_time           9.94 us         9.96 us        70510
+cublas-sgemm/256/manual_time           15.9 us         15.9 us        43980
+cublas-sgemm/512/manual_time           32.1 us         32.1 us        21864
+cublas-sgemm/1024/manual_time           179 us          179 us         3986
+cublas-sgemm/2048/manual_time          1378 us         1378 us          518
+cublas-sgemm/4096/manual_time         10903 us        10902 us           60
+cublas-sgemm/8192/manual_time         85924 us        85919 us            7
+cublas-sgemm/manual_time_BigO       8399.52 N       8399.04 N    
+cublas-sgemm/manual_time_RMS            116 %           116 %    
 ```
 
 ![matmul_benchmark](figures/matmul_benchmark.png)
