@@ -227,6 +227,30 @@ BENCHMARK(BM_cuda_unroll)->Name("cuda-unroll")
 		->UseManualTime()
 		->Unit(benchmark::kMicrosecond);
 
+static void BM_cuda_comopt(benchmark::State& state) {
+	const int n = static_cast<int>(state.range(0));
+	auto A = Matrix<float>::randn(n, n);
+	auto B = Matrix<float>::randn(n, n);
+	auto C = Matrix<float>::zeros(n, n);
+	 A = A.cuda(); B = B.cuda(); C = C.cuda();
+
+	for(auto _ : state) {
+		auto start = std::chrono::high_resolution_clock::now();
+		matmul_cuda_comopt(A, B, C);
+		cudaDeviceSynchronize();
+		auto end = std::chrono::high_resolution_clock::now();
+		auto elapsed_seconds = 
+			std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
+		state.SetIterationTime(elapsed_seconds.count());
+	}
+	state.SetComplexityN(state.range(0));
+}
+BENCHMARK(BM_cuda_comopt)->Name("cuda-comopt")
+		->RangeMultiplier(2)->Range(8, 8192)
+		->Complexity(benchmark::oN)
+		->UseManualTime()
+		->Unit(benchmark::kMicrosecond);
+
 static void BM_cublas_sgemm(benchmark::State& state) {
 	const int n = static_cast<int>(state.range(0));
 	auto A = Matrix<float>::randn(n, n);

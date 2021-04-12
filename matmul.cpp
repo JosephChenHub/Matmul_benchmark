@@ -121,6 +121,15 @@ void matmul_cuda_unroll(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<D
             A.rows(), A.cols(), B.cols());
 }
 
+template <typename Dtype>
+void matmul_cuda_comopt(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C) {
+    matmul_comopt_kernel<Dtype>(
+            reinterpret_cast<Dtype*>(A.gpu_data()), 
+            reinterpret_cast<Dtype*>(B.gpu_data()), 
+            reinterpret_cast<Dtype*>(C.gpu_data()), 
+            A.rows(), A.cols(), B.cols());
+}
+
 template <>
 void matmul_cublas(const Matrix<float>& A, const Matrix<float>& B, Matrix<float>& C) {
     cublas_sgemm(reinterpret_cast<float*>(A.gpu_data()),
@@ -129,14 +138,14 @@ void matmul_cublas(const Matrix<float>& A, const Matrix<float>& B, Matrix<float>
             A.rows(), A.cols(), B.cols());
 }
 
-template <typename Dtype>
-void matmul_cuda_vectorize(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C) {
+//template <typename Dtype>
+//void matmul_cuda_vectorize(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C) {
 //    matmul_vectorize_kernel<Dtype>(
 //            reinterpret_cast<Dtype*>(A.gpu_data()), 
 //            reinterpret_cast<Dtype*>(B.gpu_data()), 
 //            reinterpret_cast<Dtype*>(C.gpu_data()), 
 //            A.rows(), A.cols(), B.cols());
-}
+//}
 
 template <>
 void matmul_omp_sse(const Matrix<float>& A, const Matrix<float>& Bt, Matrix<float>& C) {
@@ -324,9 +333,10 @@ template void matmul_cuda_unroll(const Matrix<float>&, const Matrix<float>&, Mat
 template void matmul_cuda_unroll(const Matrix<double>&, const Matrix<double>&, Matrix<double>& );
 template void matmul_cuda_unroll(const Matrix<int>&, const Matrix<int>&, Matrix<int>& );
 
-template void matmul_cuda_vectorize(const Matrix<float>&, const Matrix<float>&, Matrix<float>& );
+template void matmul_cuda_comopt(const Matrix<float>&, const Matrix<float>&, Matrix<float>& );
+template void matmul_cuda_comopt(const Matrix<double>&, const Matrix<double>&, Matrix<double>& );
+template void matmul_cuda_comopt(const Matrix<int>&, const Matrix<int>&, Matrix<int>& );
+
+//template void matmul_cuda_vectorize(const Matrix<float>&, const Matrix<float>&, Matrix<float>& );
 //template void matmul_cuda_vectorize(const Matrix<double>&, const Matrix<double>&, Matrix<double>& );
 //template void matmul_cuda_vectorize(const Matrix<int>&, const Matrix<int>&, Matrix<int>& );
-
-
-

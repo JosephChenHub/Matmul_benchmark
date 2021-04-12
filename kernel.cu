@@ -122,26 +122,27 @@ __global__ void matmul_unroll(const Dtype* A,
             const Dtype* B, Dtype* C,  
             const int row_A, const int col_A,
             const int col_B) {
-    __shared__ Dtype sA[DIM*2][DIM+IPAD];
-    __shared__ Dtype sB[DIM*2][DIM+IPAD];
+    __shared__ Dtype sA[DIM][DIM*2+IPAD]; // 32x32, 32x32
+    __shared__ Dtype sB[DIM][DIM*2+IPAD];  
     const int xIndex = threadIdx.x + 2*blockIdx.x * blockDim.x; // column x of C/B 
     const int yIndex = threadIdx.y + 2*blockIdx.y * blockDim.y; // row y of C/A
-    Dtype tmp[4] = {0, 0, 0, 0};
+    Dtype tmp[16] = {0, 0, 0, 0};
 
     for(int i = 0; i < div_up(col_A, DIM); ++i) {
 	auto xA = DIM * i + threadIdx.x; 
 	auto yB = DIM * i + threadIdx.y;
         // load
 	sA[threadIdx.y][threadIdx.x] = fetch(A, row_A, col_A, yIndex, xA);
-	sA[threadIdx.y+DIM][threadIdx.x] = fetch(A, row_A, col_A, DIM+yIndex, xA);
+	sA[threadIdx.y][threadIdx.x+DIM] = fetch(A, row_A, col_A, DIM+yIndex, xA);
+
         sB[threadIdx.y][threadIdx.x] =  fetch(B, col_A, col_B, yB, xIndex); 
-        sB[threadIdx.y+DIM][threadIdx.x] = fetch(B, col_A, col_B, yB, xIndex+DIM); 
+	sB[threadIdx.y][threadIdx.x+DIM] = fetch(B, col_A, col_B, yB, xIndex+DIM);
         __syncthreads();
         for(int j = 0; j < DIM; ++j) {
 	    auto aj1 = sA[threadIdx.y][j];
-	    auto aj2 = sA[threadIdx.y+DIM][j];
+	    auto aj2 = sA[threadIdx.y][j+DIM];
             auto bj1 = sB[j][threadIdx.x];
-	    auto bj2 = sB[j+DIM][threadIdx.x];
+	    auto bj2 = sB[j][threadIdx.x+DIM];
 
             tmp[0] += aj1 * bj1; 
 	    tmp[1] += aj1 * bj2; 
@@ -156,8 +157,89 @@ __global__ void matmul_unroll(const Dtype* A,
     set(C, row_A, col_B, yIndex+DIM, xIndex+DIM, tmp[3]);
 }
 
+#define REDUCE_X 2
+#define REDUCE_Y 2
+// block:16x16, each thread loads 4x4 var. once
+template <typename Dtype>
+__global__ void matmul_comopt(const Dtype* A, 
+            const Dtype* B, Dtype* C,  
+            const int row_A, const int col_A,
+            const int col_B) {
+    __shared__ Dtype sA[DIM][DIM*2+IPAD]; //
+    __shared__ Dtype sB[DIM][DIM*2+IPAD];  
+    int xIndex = REDUCE_X*(threadIdx.x + 2*blockIdx.x * blockDim.x); // column x of C
+    int yIndex = REDUCE_Y*(threadIdx.y + 2*blockIdx.y * blockDim.y); // row y of C
+    Dtype tmp[4*4] = {0};
+
+    int ii, jj;
+    for(int i = 0; i < div_up(col_A, DIM); ++i) {
+	auto xA = DIM * i + threadIdx.x*REDUCE_X; 
+	auto yB = DIM * i + threadIdx.y*REDUCE_Y;
+        // load
+        #pragma unroll
+	for(ii = 0; ii < REDUCE_Y; ++ii) {
+	    for(jj = 0; jj < REDUCE_X; ++jj) {
+		sA[threadIdx.y*REDUCE_Y+ii][threadIdx.x*REDUCE_X+jj] = fetch(A, row_A, col_A, yIndex+ii, xA+jj);
+		sA[threadIdx.y*REDUCE_Y+ii][threadIdx.x*REDUCE_X+jj+DIM] = fetch(A, row_A, col_A, yIndex+ii+DIM, xA+jj);
+        	sB[threadIdx.y*REDUCE_Y+ii][threadIdx.x*REDUCE_X+jj] =  fetch(B, col_A, col_B, yB+ii, xIndex+jj); 
+        	sB[threadIdx.y*REDUCE_Y+ii][threadIdx.x*REDUCE_X+jj+DIM] =  fetch(B, col_A, col_B, yB+ii, xIndex+jj+DIM); 
+            }
+	}
+        __syncthreads();
+        for(int j = 0; j < DIM; ++j) {
+	    #pragma unroll 
+	    for(ii = 0; ii < REDUCE_Y; ++ii) {
+	        for(jj = 0; jj < REDUCE_X; ++jj) {
+	    	    tmp[(ii*REDUCE_X+jj)*4 + 0] += sA[threadIdx.y*REDUCE_Y+ii][j] * sB[j][threadIdx.x*REDUCE_X+jj];
+	    	    tmp[(ii*REDUCE_X+jj)*4 + 1] += sA[threadIdx.y*REDUCE_Y+ii][j] * sB[j][threadIdx.x*REDUCE_X+jj+DIM];
+	    	    tmp[(ii*REDUCE_X+jj)*4 + 2] += sA[threadIdx.y*REDUCE_Y+ii][j+DIM] * sB[j][threadIdx.x*REDUCE_X+jj];
+	    	    tmp[(ii*REDUCE_X+jj)*4 + 3] += sA[threadIdx.y*REDUCE_Y+ii][j+DIM] * sB[j][threadIdx.x*REDUCE_X+jj+DIM];
+		}
+	    }
+        }
+        __syncthreads();
+    }
+    #pragma unroll
+    for(ii = 0; ii < REDUCE_Y; ++ii) {
+	for(jj = 0; jj < REDUCE_X; ++jj) {
+    	    set(C, row_A, col_B, yIndex+ii,     xIndex+jj,     tmp[(ii*REDUCE_X+jj)*4  ]);
+    	    set(C, row_A, col_B, yIndex+ii,     xIndex+jj+DIM, tmp[(ii*REDUCE_X+jj)*4+1]);
+    	    set(C, row_A, col_B, yIndex+ii+DIM, xIndex+jj,     tmp[(ii*REDUCE_X+jj)*4+2]);
+    	    set(C, row_A, col_B, yIndex+ii+DIM, xIndex+jj+DIM, tmp[(ii*REDUCE_X+jj)*4+3]);
+        }
+    }
+}
 
 
+
+
+#define TRANS_X 32
+#define TRANS_Y 32
+#define TRANS_PAD 0
+template <typename Dtype>
+__global__ void transpose_unroll(const Dtype* __restrict__ src, Dtype* __restrict__ dst,
+		const int rows, const int cols) {
+    const int xIndex = threadIdx.x + blockIdx.x * blockDim.x * 2;
+    const int yIndex = threadIdx.y + blockIdx.y * blockDim.y; 
+    __shared__ Dtype tile[TRANS_Y][TRANS_X*2 + TRANS_PAD];
+
+    tile[threadIdx.y][threadIdx.x] = fetch(src, rows, cols, yIndex, xIndex);
+    tile[threadIdx.y][threadIdx.x+TRANS_X] = fetch(src, rows, cols, yIndex, xIndex+TRANS_X);
+    __syncthreads();
+
+    set(dst, cols, rows, xIndex, yIndex, tile[threadIdx.y][threadIdx.x]);
+    set(dst, cols, rows, xIndex+TRANS_X, yIndex, tile[threadIdx.y][threadIdx.x+TRANS_X]);
+}
+
+template <typename Dtype>
+void cuda_transpose(const Dtype* __restrict__ A, Dtype* __restrict__ B, 
+		const int rows, const int cols) {
+
+    dim3 block(TRANS_X, TRANS_Y);
+    dim3 grid(div_up(cols, TRANS_X*2), div_up(rows, TRANS_Y));
+
+    transpose_unroll<Dtype><<<grid, block>>>(A, B, rows, cols);
+}
 
 
 template <typename Dtype>
@@ -192,10 +274,26 @@ void matmul_unroll_kernel(const Dtype* A, const Dtype* B, Dtype* C,
     int grid_x = div_up(k, block.x*2);
     int grid_y = div_up(m, block.y*2);
     dim3 grid(grid_x, grid_y);
+    cudaFuncSetCacheConfig<Dtype>((Dtype*)&matmul_unroll<Dtype>, cudaFuncCachePreferShared);
+    //cudaDeviceSetSharedMemConfig(cudaSharedMemBankSizeEightByte);
 
     matmul_unroll<Dtype><<<grid, block>>>(
             A, B, C, m, n, k);
 }
+
+template <typename Dtype>
+void matmul_comopt_kernel(const Dtype* A, const Dtype* B, Dtype* C,
+        const int rows_A, const int cols_A, const int cols_B) {
+    dim3 block(DIM/REDUCE_X, DIM/REDUCE_Y);
+    int grid_x = div_up(cols_B, DIM*2);
+    int grid_y = div_up(rows_A, DIM*2);
+    dim3 grid(grid_x, grid_y);
+    cudaFuncSetCacheConfig<Dtype>((Dtype*)&matmul_comopt<Dtype>, cudaFuncCachePreferShared);
+
+    matmul_comopt<Dtype><<<grid, block>>>(
+            A, B, C, rows_A, cols_A, cols_B);
+}
+
 
 
 
@@ -220,4 +318,13 @@ template void matmul_unroll_kernel(const double*, const double* , double*,
 template void matmul_unroll_kernel(const int*, const int* , int*, 
         const int, const int, const int );
 
+template void matmul_comopt_kernel(const float*, const float* ,float*, 
+        const int, const int, const int );
+template void matmul_comopt_kernel(const double*, const double* , double*, 
+        const int, const int, const int );
+template void matmul_comopt_kernel(const int*, const int* , int*, 
+        const int, const int, const int );
 
+template void cuda_transpose(const float*, float*, const int, const int);
+template void cuda_transpose(const double*, double*, const int, const int);
+template void cuda_transpose(const int*, int*, const int, const int);

@@ -16,6 +16,13 @@ template <typename Dtype>
 void matmul_unroll_kernel(const Dtype*, const Dtype* , Dtype*, 
         const int, const int, const int );
 
+template <typename Dtype>
+void matmul_comopt_kernel(const Dtype*, const Dtype* , Dtype*, 
+        const int, const int, const int );
+
+
+template <typename Dtype>
+void cuda_transpose(const Dtype*, Dtype*, const int, const int);
 
 //template <typename Dtype>
 //void matmul_vectorize_kernel(const Dtype*, const Dtype*, Dtype*,

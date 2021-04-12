@@ -324,10 +324,12 @@ void matmul_cuda_tile(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dty
 
 template <typename Dtype>
 void matmul_cuda_unroll(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C);
+template <typename Dtype>
+void matmul_cuda_comopt(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C);
 
 template <typename Dtype>
 void matmul_cublas(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C);
 
-template <typename Dtype>
-void matmul_cuda_vectorize(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C);
+//template <typename Dtype>
+//void matmul_cuda_vectorize(const Matrix<Dtype>& A, const Matrix<Dtype>& B, Matrix<Dtype>& C);
 

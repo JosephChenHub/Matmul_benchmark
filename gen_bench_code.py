@@ -23,7 +23,12 @@ def gen_code(name, method, lo, hi, trans=False):
     if trans:
         dst += '\t\t%s(A, B.transpose(), C);\n'%method
     else:
-        dst += '\t\t%s(A, B, C);\n'%method
+        if method == "cuda_transpose":
+            dst += '\t\t%s(reinterpret_cast<float*>(A.gpu_data()),  \
+            reinterpret_cast<float*>(B.gpu_data()), A.rows(), A.cols());\n'%method
+        else:
+            dst += '\t\t%s(A, B, C);\n'%method
+
     if 'cuda' in method or 'CUDA' in method or 'cublas' in method:
         dst += '\t\tcudaDeviceSynchronize();\n'
     dst += '\t\tauto end = std::chrono::high_resolution_clock::now();\n'
@@ -54,8 +59,10 @@ dst += gen_code('cpu-omp-avx512', 'matmul_omp_avx512', 8, 8<<9, True)
 dst += gen_code('cuda-naive', 'matmul_cuda_naive', 8, 8<<10)
 dst += gen_code('cuda-tile', 'matmul_cuda_tile', 8, 8<<10)
 dst += gen_code('cuda-unroll', 'matmul_cuda_unroll', 8, 8<<10)
-dst += gen_code("cublas-sgemm", "matmul_cublas", 8, 8<<10)
 #dst += gen_code("cuda-vectorize", "matmul_cuda_vectorize", 8<<9, 8<<10)
+#dst += gen_code("cuda-transpose", "cuda_transpose", 8<<8, 8<<10)
+dst += gen_code("cuda-comopt", "matmul_cuda_comopt", 8, 8<<10)
+dst += gen_code("cublas-sgemm", "matmul_cublas", 8, 8<<10)
 
 dst += "\nBENCHMARK_MAIN();\n"
 #print(dst)
