@@ -73,6 +73,11 @@ T(n) = O(n^log2(7)) ~ O(n^2.8074)
 
 
 ## Benchmark
+For matmul operation : `C=AB` (`A:MxN, B: NxK`, the `GFlops` is given by
+```
+2*M*N*K * 1e-9 / run_time (second)
+```
+
 run the benchmark via the executable `bench`, an example log : 
 ```
 Running ./bench
@@ -202,19 +207,19 @@ cuda-unroll/4096/manual_time          32437 us        32435 us           18
 cuda-unroll/8192/manual_time         273728 us       273711 us            2
 cuda-unroll/manual_time_BigO       26646.96 N      26645.32 N    
 cuda-unroll/manual_time_RMS             119 %           119 %    
-cuda-comopt/8/manual_time              7.89 us         7.93 us        88133
-cuda-comopt/16/manual_time             7.98 us         8.02 us        88337
-cuda-comopt/32/manual_time             8.10 us         8.12 us        86598
-cuda-comopt/64/manual_time             10.6 us         10.7 us        66035
-cuda-comopt/128/manual_time            14.5 us         14.5 us        48186
-cuda-comopt/256/manual_time            22.3 us         22.4 us        31315
-cuda-comopt/512/manual_time            48.5 us         48.5 us        14467
-cuda-comopt/1024/manual_time            322 us          322 us         2180
-cuda-comopt/2048/manual_time           2466 us         2465 us          285
-cuda-comopt/4096/manual_time          19566 us        19565 us           30
-cuda-comopt/8192/manual_time         157816 us       157808 us            4
-cuda-comopt/manual_time_BigO       15404.69 N      15403.84 N    
-cuda-comopt/manual_time_RMS             117 %           117 %    
+cuda-comopt/8/manual_time          10.9 us         11.0 us        53702
+cuda-comopt/16/manual_time         10.4 us         10.5 us        66745
+cuda-comopt/32/manual_time         14.0 us         14.0 us        50052
+cuda-comopt/64/manual_time         21.0 us         21.1 us        33278
+cuda-comopt/128/manual_time        36.0 us         36.0 us        19437
+cuda-comopt/256/manual_time        65.0 us         65.0 us        10778
+cuda-comopt/512/manual_time         123 us          123 us         5727
+cuda-comopt/1024/manual_time        267 us          267 us         2626
+cuda-comopt/2048/manual_time       1878 us         1878 us          379
+cuda-comopt/4096/manual_time      14784 us        14783 us           43
+cuda-comopt/8192/manual_time     117838 us       117833 us            5
+cuda-comopt/manual_time_BigO   11512.14 N      11511.71 N    
+cuda-comopt/manual_time_RMS         116 %           116 % 
 cublas-sgemm/8/manual_time             8.34 us         8.37 us        84221
 cublas-sgemm/16/manual_time            8.43 us         8.45 us        85636
 cublas-sgemm/32/manual_time            10.3 us         10.3 us        66270

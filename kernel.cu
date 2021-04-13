@@ -50,22 +50,22 @@ void cublas_sgemm(const float* d_A, const float *d_B, float* d_C, const int A_RO
 
 template<typename Dtype>
 __device__ __forceinline__ void set(Dtype* data, const int rows, const int cols,
-		const int i, const int j, const Dtype value) {
-   if(i < rows && j < cols) {
+    const int i, const int j, const Dtype value) {
+    if(i < rows && j < cols) {
        data[i*cols+j] = value;
-   }
-}	
+    }
+}
 
 template <typename Dtype>
-__device__ __forceinline__ Dtype fetch(const Dtype* data, const int rows, const int cols,
-		const int i, const int j) {
+__device__ __forceinline__ Dtype fetch(const Dtype* __restrict__ data, const int rows, const int cols,
+    const int i, const int j) {
     return (i < rows && j < cols) ? data[i * cols + j] : static_cast<Dtype>(0);
-}	
+}
 
 // naive version 
 template <typename Dtype>
-__global__ void matmul_naive(const Dtype* A, 
-            const Dtype* B, Dtype* C,  
+__global__ void matmul_naive(const Dtype* __restrict__ A, 
+            const Dtype* __restrict__ B, Dtype* C,  
             const int row_A, const int col_A,
             const int col_B) {
     int xIndex = threadIdx.x + blockIdx.x * blockDim.x;
@@ -85,25 +85,26 @@ __global__ void matmul_naive(const Dtype* A,
 
 __device__ __host__ __forceinline__ int div_up(const int a, const int b) {
     return (a + b - 1) / b;
-}	
+}
 
+// 32x32: no bank conflicts
 template <typename Dtype>
-__global__ void matmul_tile(const Dtype* A, 
-            const Dtype* B, Dtype* C,  
+__global__ void matmul_tile(const Dtype* __restrict__ A, 
+            const Dtype* __restrict__ B, Dtype* C,  
             const int row_A, const int col_A,
             const int col_B) {
-    __shared__ Dtype sA[DIM][DIM+IPAD];
-    __shared__ Dtype sB[DIM][DIM+IPAD];
+    __shared__ Dtype sA[DIM][DIM];
+    __shared__ Dtype sB[DIM][DIM];
     int xIndex = threadIdx.x + blockIdx.x * blockDim.x; // column x of C/B 
     int yIndex = threadIdx.y + blockIdx.y * blockDim.y; // row y of C/A
 
     Dtype tmp(0);
     for(int i = 0; i < div_up(col_A, DIM); ++i) {
-	auto xA = DIM * i + threadIdx.x; 
-	auto yB = DIM * i + threadIdx.y;
+        auto xA = DIM * i + threadIdx.x; 
+        auto yB = DIM * i + threadIdx.y;
         // load
-	sA[threadIdx.y][threadIdx.x] = fetch(A, row_A, col_A, yIndex, xA);
-	sB[threadIdx.y][threadIdx.x] = fetch(B, col_A, col_B, yB, xIndex);
+        sA[threadIdx.y][threadIdx.x] = fetch(A, row_A, col_A, yIndex, xA);
+        sB[threadIdx.y][threadIdx.x] = fetch(B, col_A, col_B, yB, xIndex);
 
         __syncthreads();
         // partial matmul
@@ -118,36 +119,36 @@ __global__ void matmul_tile(const Dtype* A,
 
 
 template <typename Dtype>
-__global__ void matmul_unroll(const Dtype* A, 
-            const Dtype* B, Dtype* C,  
+__global__ void matmul_unroll(const Dtype* __restrict__ A, 
+            const Dtype* __restrict__ B, Dtype* C,  
             const int row_A, const int col_A,
             const int col_B) {
-    __shared__ Dtype sA[DIM][DIM*2+IPAD]; // 32x32, 32x32
-    __shared__ Dtype sB[DIM][DIM*2+IPAD];  
+    __shared__ Dtype sA[DIM][DIM*2]; // 32x32, 32x32
+    __shared__ Dtype sB[DIM][DIM*2];  
     const int xIndex = threadIdx.x + 2*blockIdx.x * blockDim.x; // column x of C/B 
     const int yIndex = threadIdx.y + 2*blockIdx.y * blockDim.y; // row y of C/A
-    Dtype tmp[16] = {0, 0, 0, 0};
+    Dtype tmp[4] = {0, 0, 0, 0};
 
     for(int i = 0; i < div_up(col_A, DIM); ++i) {
-	auto xA = DIM * i + threadIdx.x; 
-	auto yB = DIM * i + threadIdx.y;
+        auto xA = DIM * i + threadIdx.x; 
+        auto yB = DIM * i + threadIdx.y;
         // load
-	sA[threadIdx.y][threadIdx.x] = fetch(A, row_A, col_A, yIndex, xA);
-	sA[threadIdx.y][threadIdx.x+DIM] = fetch(A, row_A, col_A, DIM+yIndex, xA);
+        sA[threadIdx.y][threadIdx.x] = fetch(A, row_A, col_A, yIndex, xA);
+        sA[threadIdx.y][threadIdx.x+DIM] = fetch(A, row_A, col_A, DIM+yIndex, xA);
 
         sB[threadIdx.y][threadIdx.x] =  fetch(B, col_A, col_B, yB, xIndex); 
-	sB[threadIdx.y][threadIdx.x+DIM] = fetch(B, col_A, col_B, yB, xIndex+DIM);
+        sB[threadIdx.y][threadIdx.x+DIM] = fetch(B, col_A, col_B, yB, xIndex+DIM);
         __syncthreads();
         for(int j = 0; j < DIM; ++j) {
-	    auto aj1 = sA[threadIdx.y][j];
-	    auto aj2 = sA[threadIdx.y][j+DIM];
+            auto aj1 = sA[threadIdx.y][j];
+            auto aj2 = sA[threadIdx.y][j+DIM];
             auto bj1 = sB[j][threadIdx.x];
-	    auto bj2 = sB[j][threadIdx.x+DIM];
+            auto bj2 = sB[j][threadIdx.x+DIM];
 
             tmp[0] += aj1 * bj1; 
-	    tmp[1] += aj1 * bj2; 
-	    tmp[2] += aj2 * bj1; 
-	    tmp[3] += aj2 * bj2;
+            tmp[1] += aj1 * bj2; 
+            tmp[2] += aj2 * bj1; 
+            tmp[3] += aj2 * bj2;
         }
         __syncthreads();
     }
@@ -157,56 +158,55 @@ __global__ void matmul_unroll(const Dtype* A,
     set(C, row_A, col_B, yIndex+DIM, xIndex+DIM, tmp[3]);
 }
 
-#define REDUCE_X 2
-#define REDUCE_Y 2
-// block:16x16, each thread loads 4x4 var. once
+#define _TILE_WIDTH 128 
+#define _BLOCK_THREADS 16 
+#define _REDUCE 8
+#define _X_EXPAND _BLOCK_THREADS
+#define _Y_EXPAND (_BLOCK_THREADS * _BLOCK_THREADS / _TILE_WIDTH)
+
+// block:16x16, each block computes a 128x128 tile
 template <typename Dtype>
-__global__ void matmul_comopt(const Dtype* A, 
-            const Dtype* B, Dtype* C,  
+__global__ void matmul_comopt(const Dtype* __restrict__ A, 
+            const Dtype* __restrict__ B, Dtype* C,  
             const int row_A, const int col_A,
             const int col_B) {
-    __shared__ Dtype sA[DIM][DIM*2+IPAD]; //
-    __shared__ Dtype sB[DIM][DIM*2+IPAD];  
-    int xIndex = REDUCE_X*(threadIdx.x + 2*blockIdx.x * blockDim.x); // column x of C
-    int yIndex = REDUCE_Y*(threadIdx.y + 2*blockIdx.y * blockDim.y); // row y of C
-    Dtype tmp[4*4] = {0};
+    const int xIndex = threadIdx.x + blockIdx.x * _TILE_WIDTH; // column x of C/B 
+    const int yIndex = threadIdx.y + blockIdx.y * _TILE_WIDTH; // row y of C/A
+    __shared__ Dtype sA[_TILE_WIDTH][_BLOCK_THREADS];  // 128x16
+    __shared__ Dtype sB[_BLOCK_THREADS][_TILE_WIDTH];  // 16x128
+    Dtype tmp[_REDUCE*_REDUCE];
+    for(int i = 0; i < _REDUCE*_REDUCE; ++i) tmp[i] = 0;
+
+    const int local_id = threadIdx.x + blockDim.x * threadIdx.y;
+    const int local_ax = local_id % _BLOCK_THREADS;
+    const int local_ay = local_id / _BLOCK_THREADS;
+    const int local_bx = local_id % _TILE_WIDTH;
+    const int local_by = local_id / _TILE_WIDTH;
 
     int ii, jj;
-    for(int i = 0; i < div_up(col_A, DIM); ++i) {
-	auto xA = DIM * i + threadIdx.x*REDUCE_X; 
-	auto yB = DIM * i + threadIdx.y*REDUCE_Y;
+    for(int i = 0; i < div_up(col_A, _BLOCK_THREADS); ++i) {
         // load
         #pragma unroll
-	for(ii = 0; ii < REDUCE_Y; ++ii) {
-	    for(jj = 0; jj < REDUCE_X; ++jj) {
-		sA[threadIdx.y*REDUCE_Y+ii][threadIdx.x*REDUCE_X+jj] = fetch(A, row_A, col_A, yIndex+ii, xA+jj);
-		sA[threadIdx.y*REDUCE_Y+ii][threadIdx.x*REDUCE_X+jj+DIM] = fetch(A, row_A, col_A, yIndex+ii+DIM, xA+jj);
-        	sB[threadIdx.y*REDUCE_Y+ii][threadIdx.x*REDUCE_X+jj] =  fetch(B, col_A, col_B, yB+ii, xIndex+jj); 
-        	sB[threadIdx.y*REDUCE_Y+ii][threadIdx.x*REDUCE_X+jj+DIM] =  fetch(B, col_A, col_B, yB+ii, xIndex+jj+DIM); 
+        for(ii = 0; ii < _REDUCE; ++ii) {
+            sA[local_ay+ii*_X_EXPAND][local_ax] =  fetch(A, row_A, col_A, blockIdx.y*_TILE_WIDTH + ii*_X_EXPAND + local_ay, local_ax + _BLOCK_THREADS*i);
+            sB[local_by+ii*_Y_EXPAND][local_bx] =  fetch(B, col_A, col_B, _BLOCK_THREADS*i+local_by+ii*_Y_EXPAND, local_bx+blockIdx.x*_TILE_WIDTH);
+        }
+        __syncthreads(); 
+        for(int j = 0; j < _BLOCK_THREADS; ++j) {
+            #pragma unroll 
+            for(ii = 0; ii < _REDUCE; ++ii) {
+                for(jj = 0; jj < _REDUCE; ++jj) {
+                    tmp[ii*_REDUCE+jj] += sA[threadIdx.y+blockDim.y*ii][j] * sB[j][threadIdx.x + blockDim.x * jj];
+                }
             }
-	}
-        __syncthreads();
-        for(int j = 0; j < DIM; ++j) {
-	    #pragma unroll 
-	    for(ii = 0; ii < REDUCE_Y; ++ii) {
-	        for(jj = 0; jj < REDUCE_X; ++jj) {
-	    	    tmp[(ii*REDUCE_X+jj)*4 + 0] += sA[threadIdx.y*REDUCE_Y+ii][j] * sB[j][threadIdx.x*REDUCE_X+jj];
-	    	    tmp[(ii*REDUCE_X+jj)*4 + 1] += sA[threadIdx.y*REDUCE_Y+ii][j] * sB[j][threadIdx.x*REDUCE_X+jj+DIM];
-	    	    tmp[(ii*REDUCE_X+jj)*4 + 2] += sA[threadIdx.y*REDUCE_Y+ii][j+DIM] * sB[j][threadIdx.x*REDUCE_X+jj];
-	    	    tmp[(ii*REDUCE_X+jj)*4 + 3] += sA[threadIdx.y*REDUCE_Y+ii][j+DIM] * sB[j][threadIdx.x*REDUCE_X+jj+DIM];
-		}
-	    }
         }
         __syncthreads();
     }
     #pragma unroll
-    for(ii = 0; ii < REDUCE_Y; ++ii) {
-	for(jj = 0; jj < REDUCE_X; ++jj) {
-    	    set(C, row_A, col_B, yIndex+ii,     xIndex+jj,     tmp[(ii*REDUCE_X+jj)*4  ]);
-    	    set(C, row_A, col_B, yIndex+ii,     xIndex+jj+DIM, tmp[(ii*REDUCE_X+jj)*4+1]);
-    	    set(C, row_A, col_B, yIndex+ii+DIM, xIndex+jj,     tmp[(ii*REDUCE_X+jj)*4+2]);
-    	    set(C, row_A, col_B, yIndex+ii+DIM, xIndex+jj+DIM, tmp[(ii*REDUCE_X+jj)*4+3]);
-        }
+    for(ii = 0; ii < _REDUCE; ++ii) {
+        for(jj = 0; jj < _REDUCE; ++jj) {
+            set(C, row_A, col_B, yIndex+blockDim.y*ii , xIndex+blockDim.x*jj, tmp[ii*_REDUCE+jj]);
+        }   
     }
 }
 
@@ -218,7 +218,7 @@ __global__ void matmul_comopt(const Dtype* A,
 #define TRANS_PAD 0
 template <typename Dtype>
 __global__ void transpose_unroll(const Dtype* __restrict__ src, Dtype* __restrict__ dst,
-		const int rows, const int cols) {
+    const int rows, const int cols) {
     const int xIndex = threadIdx.x + blockIdx.x * blockDim.x * 2;
     const int yIndex = threadIdx.y + blockIdx.y * blockDim.y; 
     __shared__ Dtype tile[TRANS_Y][TRANS_X*2 + TRANS_PAD];
@@ -233,7 +233,7 @@ __global__ void transpose_unroll(const Dtype* __restrict__ src, Dtype* __restric
 
 template <typename Dtype>
 void cuda_transpose(const Dtype* __restrict__ A, Dtype* __restrict__ B, 
-		const int rows, const int cols) {
+    const int rows, const int cols) {
 
     dim3 block(TRANS_X, TRANS_Y);
     dim3 grid(div_up(cols, TRANS_X*2), div_up(rows, TRANS_Y));
@@ -284,11 +284,12 @@ void matmul_unroll_kernel(const Dtype* A, const Dtype* B, Dtype* C,
 template <typename Dtype>
 void matmul_comopt_kernel(const Dtype* A, const Dtype* B, Dtype* C,
         const int rows_A, const int cols_A, const int cols_B) {
-    dim3 block(DIM/REDUCE_X, DIM/REDUCE_Y);
-    int grid_x = div_up(cols_B, DIM*2);
-    int grid_y = div_up(rows_A, DIM*2);
+    dim3 block(_BLOCK_THREADS, _BLOCK_THREADS);
+    int grid_x = div_up(cols_B, _TILE_WIDTH);
+    int grid_y = div_up(rows_A, _TILE_WIDTH);
     dim3 grid(grid_x, grid_y);
     cudaFuncSetCacheConfig<Dtype>((Dtype*)&matmul_comopt<Dtype>, cudaFuncCachePreferShared);
+//    cudaDeviceSetSharedMemConfig(cudaSharedMemBankSizeEightByte);
 
     matmul_comopt<Dtype><<<grid, block>>>(
             A, B, C, rows_A, cols_A, cols_B);
